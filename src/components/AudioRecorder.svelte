@@ -1,26 +1,33 @@
-<div class="recorder-container">
+<main>
     <button on:click={isRecording ? handleStop : handleStart}>
-        {isRecording ? '⏹ Stop' : '⏺ Start'}
+        {isRecording ? '⏹ توقف' : '⏺ سجل'}
     </button>
-    <span>{recordingDuration}s</span>
 
     {#if recordedBlob}
-        <audio controls>
-            <source src={URL.createObjectURL(recordedBlob)} type="audio/mp4" />
-        </audio>
+        <div class="playback">
+            <audio controls>
+                <source src={URL.createObjectURL(recordedBlob)} type="audio/mp4" />
+            </audio>
+            <button on:click={handleSave}>💾 حفظ</button>
+            <button on:click={handleDelete}>❌ مسح</button>
+        </div>
     {/if}
-</div>
+</main>
 
 <script lang="ts">
 import {startRecording, stopRecording} from '../lib/AudioService.ts'
+import {saveRecording} from '../lib/StorageService.ts'
 
+export let fetchRecordings
+
+let intervalId: number
 let isRecording: boolean = false
 let recordingDuration: number = 0
-let intervalId: number
 let recordedBlob: Blob | null = null
 
 const handleStart = async () => {
     try {
+        recordedBlob = null
         await startRecording()
         isRecording = true
         intervalId = setInterval(() => recordingDuration++, 1000)
@@ -31,11 +38,21 @@ const handleStart = async () => {
 }
 
 const handleStop = async () => {
-    const blob = await stopRecording()
-    recordedBlob = blob
+    recordedBlob = await stopRecording()
     clearInterval(intervalId)
-    recordingDuration = 0
     isRecording = false
+}
+
+const handleSave = async () => {
+    if (recordedBlob) {
+        await saveRecording(recordedBlob, recordingDuration)
+        recordedBlob = null
+        await fetchRecordings()
+    }
+}
+
+const handleDelete = () => {
+    recordedBlob = null
 }
 </script>
 

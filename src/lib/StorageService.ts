@@ -1,18 +1,17 @@
 import {del, get, keys, set} from 'idb-keyval'
 
 type Recording = {
+    id: string
     blob: Blob
+    duration: number
     timestamp: number
 }
 
-// const STORE_NAME = 'audio_recordings'
-
-export const saveRecording = async (recording: Blob) => {
+export const saveRecording = async (blob: Blob, duration: number) => {
     const id = crypto.randomUUID()
-    await set(id, {
-        blob: recording,
-        timestamp: Date.now(),
-    })
+    const recording: Recording = {id, blob, timestamp: Date.now(), duration}
+
+    await set(id, recording)
     return id
 }
 

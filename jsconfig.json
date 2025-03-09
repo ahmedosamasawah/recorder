@@ -4,6 +4,7 @@
     "target": "esnext",
     "baseUrl": ".",
     "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
     "allowJs": true,
     "checkJs": true,
     "paths": {

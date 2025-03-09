@@ -1,52 +1,73 @@
 import js from '@eslint/js'
+import tsPlugin from '@typescript-eslint/eslint-plugin'
+import tsParser from '@typescript-eslint/parser'
 import eslintPluginImportX from 'eslint-plugin-import-x'
 import simpleImportSort from 'eslint-plugin-simple-import-sort'
-import svelte from 'eslint-plugin-svelte'
+import sveltePlugin from 'eslint-plugin-svelte'
 import {readFileSync as r} from 'fs'
 import globals from 'globals'
+import svelteParser from 'svelte-eslint-parser' // ✅ Correct parser usage for .svelte
 
 const prep_globals = s => Object.fromEntries(s.split(' ').map(g => [g, 'readonly']))
+
 const globals_all = {
     ...prep_globals(
         r('src/auto-imports.d.ts', 'utf8')
             .match(/const (\w+):/g)
-            .map(x => x.slice(6, -1))
-            .join(' '),
+            ?.map(x => x.slice(6, -1))
+            .join(' ') || '',
     ),
     ...prep_globals('Sentry'),
 }
 
-/** @type {import('eslint').Linter.Config[]} */
 export default [
     js.configs.recommended,
-    ...svelte.configs['flat/recommended'],
+
     {
         ignores: [
             'misc/**/*',
-            ...'node_modules,dist,dist-native,android,ios,public'
-                .split(',')
-                .map(x => x + '/**/*'),
+            ...'node_modules,dist,dist-native,android,ios,public'.split(',').map(x => x + '/**/*'),
             'build.js',
         ],
     },
+
+    // ✅ TypeScript and JavaScript configuration
     {
-        files: ['**/*.js'],
+        files: ['**/*.ts', '**/*.js'],
         languageOptions: {
+            parser: tsParser,
+            sourceType: 'module',
             globals: {...globals.es2021, ...globals.browser, ...globals_all},
         },
-    },
-    {
-        files: ['vite.config.js', 'postcss.config.js'],
-        languageOptions: {
-            globals: {...globals.es2021, ...globals.node},
+        plugins: {
+            '@typescript-eslint': tsPlugin,
+        },
+        rules: {
+            ...tsPlugin.configs.recommended.rules,
+            '@typescript-eslint/no-unused-vars': [
+                'warn',
+                {argsIgnorePattern: '^_', varsIgnorePattern: '^_'},
+            ],
         },
     },
+
+    // ✅ Svelte Configuration (Fixing Parsing Errors)
     {
         files: ['**/*.svelte'],
         languageOptions: {
+            parser: svelteParser, // ✅ Corrected parser usage
+            sourceType: 'module',
             globals: {...globals.es2021, ...globals.browser, ...globals_all},
+            parserOptions: {
+                parser: tsParser, // ✅ Ensuring TypeScript support inside Svelte
+                extraFileExtensions: ['.svelte'],
+            },
+        },
+        plugins: {
+            svelte: sveltePlugin, // ✅ Keep this for Svelte-specific linting rules
         },
         rules: {
+            ...sveltePlugin.configs.recommended.rules,
             'no-inner-declarations': 'off',
             'no-self-assign': 'off',
             'svelte/no-at-html-tags': 'off',
@@ -55,6 +76,8 @@ export default [
             'no-unused-vars': ['error', {argsIgnorePattern: '^_', varsIgnorePattern: '^_'}],
         },
     },
+
+    // ✅ Import sorting and rules
     {
         plugins: {
             'simple-import-sort': simpleImportSort,

@@ -1,48 +1,28 @@
 <main>
-  <Component params={route.params} />
-  {#if is404}
-    <h1>404</h1>
-    <a href="/">Home</a>
-  {/if}
+    <h1>مسجل صوت</h1>
+    <AudioRecorder />
+    <div class="recordings">
+        {#each recordings as rec (rec.timestamp)}
+            <Player audioBlob={rec.blob} />
+        {/each}
+    </div>
 </main>
 
-<script module>
-import navaid from 'navaid'
+<script lang="ts">
+import AudioRecorder from './components/AudioRecorder.svelte'
+import Player from './components/Player.svelte'
+import {getAllRecordings} from './lib/StorageService.ts'
 
-// prettier-ignore
-const routes = [
-    ['/', import('./Home.svelte')],
-]
-let Component = $state()
-let is404 = $state(false)
-
-export const router = navaid('/', async uri => {
-    is404 = true
-    Component = null
-    Object.assign(route, {path: uri, params: null})
-})
-export const route = $state({path: location.pathname, params: null})
-
-for (const [path, cmp_] of routes) {
-    router.on(path, params => {
-        is404 = false
-        document.startViewTransition(async () => {
-            const {default: cmp, ...exports} = await cmp_
-
-            if (exports?.validate_params && !(await exports.validate_params(params))) {
-                router.route('/')
-                return
-            }
-
-            Component = cmp
-            Object.assign(route, {path: location.pathname, params})
-        })
-    })
+type Recording = {
+    blob: Blob
+    timestamp: number
 }
 
-router.listen()
-</script>
+let recordings: Recording[] = []
 
-<script>
-setContext('router', router)
+const fetchRecordings = async () => {
+    recordings = await getAllRecordings()
+}
+
+fetchRecordings()
 </script>

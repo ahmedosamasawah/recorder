@@ -1,3 +1,5 @@
+import process from 'node:process'
+
 const prod = process.env.NODE_ENV === 'production'
 export default {
     plugins: {

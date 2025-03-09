@@ -1,8 +1,11 @@
+import process from 'node:process'
+
 import {svelte} from '@sveltejs/vite-plugin-svelte'
-import path from 'path'
 import {execFileSync as exec} from 'child_process'
-import pkg from './package.json'
+import path from 'path'
 import AutoImport from 'unplugin-auto-import/vite'
+
+import pkg from './package.json'
 
 const is_build = process.argv.includes('build')
 
@@ -29,7 +32,9 @@ export default {
             input: './index.html',
             output: {
                 inlineDynamicImports: true,
-                intro: Object.entries(vars).map(([k, v]) => `${k} = ${v}`).join('\n'),
+                intro: Object.entries(vars)
+                    .map(([k, v]) => `${k} = ${v}`)
+                    .join('\n'),
             },
         },
     },
@@ -51,17 +56,11 @@ export default {
                     'a11y_label_has_associated_control',
                     'a11y_no_noninteractive_element_interactions',
                 ]
-                if (!IGNORED_WARNINGS.includes(warning.code))
-                    handler(warning)
+                if (!IGNORED_WARNINGS.includes(warning.code)) handler(warning)
             },
         }),
         AutoImport({
-            imports: [
-                'svelte',
-                'svelte/store',
-                'svelte/transition',
-                'svelte/animate',
-            ],
+            imports: ['svelte', 'svelte/store', 'svelte/transition', 'svelte/animate'],
             dts: './src/auto-imports.d.ts',
         }),
     ],

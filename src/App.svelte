@@ -1,4 +1,4 @@
-<main>
+<main class="flex flex-col items-center justify-center">
     <h1>مسجل صوت</h1>
     <AudioRecorder {fetchRecordings} />
     <RecordingsList {recordings} {fetchRecordings} />
@@ -18,9 +18,7 @@ type Recording = {
 
 let recordings: Recording[] = []
 
-const fetchRecordings = async () => {
-    recordings = await getAllRecordings()
-}
+const fetchRecordings = async () => (recordings = await getAllRecordings())
 
 fetchRecordings()
 </script>

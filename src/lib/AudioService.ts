@@ -10,8 +10,8 @@ export const startRecording = async () => {
         mediaRecorder.ondataavailable = event => audioChunks.push(event.data)
         mediaRecorder.start()
     } catch (error) {
-        console.error('🎙️ Microphone access denied:', error) // TODO: Delete later
-        throw new Error('Microphone access is required to record audio.')
+        console.error('تم رفض الوصول إلى الميكروفون:', error) // TODO: Delete later
+        throw new Error('يتطلب الوصول إلى الميكروفون لتسجيل الصوت.')
     }
 }
 

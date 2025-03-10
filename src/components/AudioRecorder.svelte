@@ -52,7 +52,7 @@ const handleSave = async () => {
 }
 
 const handleDelete = () => {
-    recordedBlob = null
+    if (confirm('Are you sure you want to delete this recording?')) recordedBlob = null
 }
 </script>
 

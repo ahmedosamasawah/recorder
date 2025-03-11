@@ -1,6 +1,6 @@
 {
-  "name": "app",
-  "version": "0.0.1",
+  "name": "audio-recorder",
+  "version": "1.0.0",
   "devDependencies": {
     "@csstools/postcss-is-pseudo-class": "^5.0.1",
     "@eslint/js": "^9.22.0",
@@ -55,8 +55,5 @@
     "last 35 firefox version",
     "last 15 safari version"
   ],
-  "type": "module",
-  "dependencies": {
-    "mode-watcher": "^0.5.1"
-  }
+  "type": "module"
 }

@@ -6,8 +6,12 @@
 </span>
 
 <script lang="ts">
-export let icon: string
-export let size: string = '1em'
-export let className: string = ''
-export let color: string = 'currentColor'
+interface Props {
+    icon: string
+    size?: string
+    className?: string
+    color?: string
+}
+
+let {icon, size = '1em', className = '', color = 'currentColor'}: Props = $props()
 </script>

@@ -4,60 +4,49 @@
     class:rounded
     class:interactive
     bind:this={track}
-    class="progress-track"
-    on:click={handleClick}
+    class="relative w-full overflow-hidden"
+    on:click={handle_click}
     style="
       height: {height};
-      background-color: {backgroundColor};
+      background-color: {background_color};
     "
 >
     <div
         style="
-        background-color: {progressColor};
+        background-color: {progress_color};
         width: {Math.min(100, Math.max(0, (value / max) * 100))}%;
         "
-        class="progress-fill"
+        class="transition-width h-full duration-100"
         class:rounded
     ></div>
 </div>
 
-<script lang="ts">
-export let max: number = 100
-export let value: number = 0
-export let height: string = '4px'
-export let rounded: boolean = true
-export let interactive: boolean = false
-export let progressColor: string = '#4a86e8'
-export let backgroundColor: string = '#f0f0f0'
+<script>
+export let max = 100
+export let value = 0
+export let height = '4px'
+export let rounded = true
+export let interactive = false
+export let progress_color = '#4a86e8'
+export let background_color = '#f0f0f0'
 
 // For seeking functionality
-export let onSeek: ((_percent: number) => void) | null = null
+export let on_seek = null
 
-let track: HTMLDivElement
+let track
 
-function handleClick(e: MouseEvent) {
-    if (!interactive || !onSeek) return
+function handle_click(e) {
+    if (!interactive || !on_seek) return
 
     const rect = track.getBoundingClientRect()
     const offsetX = e.clientX - rect.left
     const percentage = offsetX / rect.width
 
-    onSeek(percentage)
+    on_seek(percentage)
 }
 </script>
 
 <style>
-.progress-track {
-    width: 100%;
-    overflow: hidden;
-    position: relative;
-}
-
-.progress-fill {
-    height: 100%;
-    transition: width 0.1s ease;
-}
-
 .rounded {
     border-radius: 9999px;
 }

@@ -1,141 +1,103 @@
-<div class="record-controls">
-    <div class="buttons-container">
-        {#if isRecording}
-            <Button
-                type="icon"
+<div class="mb-8 flex flex-col items-center">
+    <div class="mb-2 flex gap-6">
+        {#if is_recording}
+            <button
                 title="توقف"
-                size="circle"
-                icon={StopIcon}
-                styles="stop-button"
-                disabled={!isRecording}
-                on:click={handleStopRecording}
-            />
+                aria-label="توقف"
+                disabled={!is_recording}
+                onclick={handle_stop_recording}
+                class="flex h-16 w-16 items-center justify-center rounded-full bg-white text-gray-800 shadow-md hover:bg-gray-50"
+            >
+                <div class="h-6 w-6">
+                    {@html StopIcon}
+                </div>
+            </button>
         {:else}
-            <Button
+            <button
                 title="سجل"
-                type="icon"
-                size="circle"
-                icon={RecordIcon}
-                disabled={isRecording}
-                styles="record-button"
-                on:click={handleStartRecording}
-            />
+                aria-label="سجل"
+                disabled={is_recording}
+                onclick={handle_start_recording}
+                class="flex h-16 w-16 items-center justify-center rounded-full bg-white text-red-500 shadow-md hover:bg-gray-50"
+            >
+                <div class="h-6 w-6">
+                    {@html RecordIcon}
+                </div>
+            </button>
         {/if}
     </div>
 
-    {#if isRecording}
-        <div class="recording-indicator">
-            <div class="pulse"></div>
-            <TimeDisplay currentTime={elapsedTime} duration={0} />
+    {#if is_recording}
+        <div class="mt-2 flex items-center gap-2">
+            <div class="h-3 w-3 animate-pulse rounded-full bg-red-500"></div>
+            <TimeDisplay current_time={elapsed_time} duration={0} />
         </div>
     {/if}
 </div>
 
-<script lang="ts">
-import {createEventDispatcher, onDestroy} from 'svelte'
-
-import {startRecording, stopRecording} from '../lib/services/AudioService.ts'
-import {recordingProgress} from '../lib/stores/audioStore.ts'
-import {saveRecording} from '../lib/stores/recordingStore.ts'
-import {RecordIcon, StopIcon} from '../lib/utils/icons.ts'
-import Button from './ui/Button.svelte'
+<script>
 import TimeDisplay from './ui/TimeDisplay.svelte'
+import {createEventDispatcher, onDestroy} from 'svelte'
+import {RecordIcon, StopIcon} from '../lib/utils/icons.js'
+import {save_recording} from '../lib/stores/recordingStore.js'
+import {recording_progress} from '../lib/stores/audioStore.js'
+import {start_recording, stop_recording} from '../lib/services/AudioService.js'
 
-let elapsedTime = 0
-export let isRecording: boolean
-let intervalId: number | undefined
+let elapsed_time = $state(0)
+let {is_recording} = $props()
+let interval_id = $state(undefined)
 const dispatch = createEventDispatcher()
 
 // Subscribe to recording progress store
-const unsubscribe = recordingProgress.subscribe(state => {
-    isRecording = state.isActive
-    dispatch('recordingStateChange', {isRecording: state.isActive})
+const unsubscribe = recording_progress.subscribe(state => {
+    is_recording = state.is_active
+    dispatch('recordingStateChange', {is_recording: state.is_active})
 })
 
-$: if (isRecording && !intervalId) startTimer()
-else if (!isRecording && intervalId) stopTimer()
+$effect(() => {
+    if (is_recording && !interval_id) start_timer()
+    else if (!is_recording && interval_id) stop_timer()
+})
 
-function startTimer() {
-    elapsedTime = 0
-    intervalId = window.setInterval(() => (elapsedTime += 1), 1000)
+function start_timer() {
+    elapsed_time = 0
+    interval_id = window.setInterval(() => (elapsed_time += 1), 1000)
 }
 
-function stopTimer() {
-    if (intervalId) {
-        clearInterval(intervalId)
-        intervalId = undefined
+function stop_timer() {
+    if (interval_id) {
+        clearInterval(interval_id)
+        interval_id = undefined
     }
 }
 
-async function handleStartRecording() {
+async function handle_start_recording() {
     try {
-        await startRecording()
+        await start_recording()
     } catch (error) {
-        console.error('Failed to start recording:', error) // TODO: Delete later
-        alert('فشل في بدء التسجيل. الرجاء التأكد من إتاحة الوصول إلى الميكروفون.') // TODO: Use toast if Mostafa wanted
+        console.error('Failed to start recording:', error)
+        alert('فشل في بدء التسجيل. الرجاء التأكد من إتاحة الوصول إلى الميكروفون.')
     }
 }
 
-async function handleStopRecording() {
+async function handle_stop_recording() {
     try {
-        const audioBlob = await stopRecording()
-        await saveRecording(audioBlob, elapsedTime)
-        elapsedTime = 0
+        const result = await stop_recording()
+
+        const audio_blob = result.blob || result
+        const duration = result.duration || elapsed_time
+
+        console.log('Saving recording with duration:', duration) // TODO: DELETE LATER
+        await save_recording(audio_blob, duration)
+        elapsed_time = 0
     } catch (error) {
-        console.error('Failed to stop recording:', error) // TODO: Delete later
-        alert('حدث خطأ أثناء حفظ التسجيل.') // TODO: Use toast if Mostafa wanted
+        console.error('Failed to stop recording:', error)
+        alert('حدث خطأ أثناء حفظ التسجيل.')
     }
 }
 
 onDestroy(() => {
     unsubscribe()
-    stopTimer()
+    stop_timer()
 })
 </script>
-
-<style>
-.record-controls {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 2rem;
-}
-
-.buttons-container {
-    display: flex;
-    gap: 1.5rem;
-    margin-bottom: 0.5rem;
-}
-
-.recording-indicator {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-}
-
-.pulse {
-    width: 0.75rem;
-    height: 0.75rem;
-    border-radius: 50%;
-    background-color: #ef4444;
-    animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-    0% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-    }
-
-    70% {
-        transform: scale(1);
-        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
-    }
-
-    100% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-    }
-}
-</style>

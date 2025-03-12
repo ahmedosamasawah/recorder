@@ -1,102 +1,40 @@
-<main class="app-container">
-    <h1 class="app-title">مسجل صوت</h1>
+<main class="mx-auto min-h-screen max-w-3xl p-6">
+    <h1 class="mb-8 text-center text-2xl font-bold text-gray-800">مسجل صوت</h1>
 
-    <RecordButtons {isRecording} on:recordingStateChange={handleRecordingStateChange} />
-    <AudioPlayer {recording} {isRecording} />
+    <RecordButtons {is_recording} on:recordingStateChange={handle_recording_state_change} />
+    {#if recording}
+        <AudioPlayer {recording} {is_recording} />
+    {/if}
     <RecordingsList />
 </main>
 
-<script lang="ts">
-import {onMount} from 'svelte'
-
+<script>
+import {onMount, onDestroy} from 'svelte'
 import AudioPlayer from './components/AudioPlayer.svelte'
 import RecordButtons from './components/RecordButtons.svelte'
 import RecordingsList from './components/RecordingsList.svelte'
-import {recordingProgress} from './lib/stores/audioStore.ts'
-import {currentRecording, loadRecordings} from './lib/stores/recordingStore.ts'
-import type {Recording} from './lib/types'
+import {recording_progress} from './lib/stores/audioStore.js'
+import {current_recording, load_recordings} from './lib/stores/recordingStore.js'
 
-let isRecording: boolean = false
-let recording: Recording | null = null
+// Define state variables
+let recording = $state(null)
+let is_recording = $state(false)
 
 // Subscribe to the current recording store
-const unsubscribeRecording = currentRecording.subscribe(value => (recording = value))
+const unsubscribe_recording = current_recording.subscribe(value => (recording = value))
 
-// Subscribe to recording progress store to ensure isRecording is synced
-const unsubscribeProgress = recordingProgress.subscribe(state => (isRecording = state.isActive))
+// Subscribe to recording progress store to ensure is_recording is synced
+const unsubscribe_progress = recording_progress.subscribe(state => (is_recording = state.is_active))
 
-type RecordingStateEvent = {
-    detail: {
-        isRecording: boolean
-    }
-}
-
-function handleRecordingStateChange(event: RecordingStateEvent) {
-    isRecording = event.detail.isRecording
+function handle_recording_state_change(event) {
+    is_recording = event.detail.is_recording
 }
 
 // Initialize recordings
-onMount(async () => await loadRecordings())
+onMount(async () => await load_recordings())
 
 onDestroy(() => {
-    unsubscribeRecording()
-    unsubscribeProgress()
+    unsubscribe_recording()
+    unsubscribe_progress()
 })
-
-// Clean up subscription on component destroy
-// function cleanup() {
-//     unsubscribe()
-// }
 </script>
-
-<style global>
-@font-face {
-    font-family: 'Kitab';
-    src: url('https://fonts.nuqayah.com/kitab.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'Kitab';
-    src: url('https://fonts.nuqayah.com/kitab-b.woff2') format('woff2');
-    font-weight: bold;
-    font-style: normal;
-    font-display: swap;
-}
-
-:root {
-    direction: rtl;
-}
-
-* {
-    box-sizing: border-box;
-}
-
-.app-container {
-    max-width: 48rem;
-    margin: 0 auto;
-    padding: 1.5rem;
-    min-height: 100vh;
-}
-
-.app-title {
-    font-size: 2rem;
-    font-weight: 700;
-    text-align: center;
-    margin-bottom: 2rem;
-    color: #1f2937;
-}
-
-:focus:not(:focus-visible) {
-    outline: none;
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-    .app-title {
-        color: #f3f4f6;
-    }
-}
-</style>

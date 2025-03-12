@@ -3,11 +3,11 @@
  * @param seconds Time in seconds
  * @returns Formatted time string
  */
-export function formatTime(seconds: number): string {
+export function format_time(seconds) {
     if (isNaN(seconds) || !isFinite(seconds)) return '00:00'
     const minutes = Math.floor(seconds / 60)
-    const remainingSeconds = Math.floor(seconds % 60)
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`
+    const remaining_seconds = Math.floor(seconds % 60)
+    return `${minutes.toString().padStart(2, '0')}:${remaining_seconds.toString().padStart(2, '0')}`
 }
 
 /**
@@ -15,7 +15,7 @@ export function formatTime(seconds: number): string {
  * @param seconds Time in seconds
  * @returns Formatted time string
  */
-export function formatTimeISO(seconds: number): string {
+export function format_time_iso(seconds) {
     if (isNaN(seconds) || !isFinite(seconds)) return '00:00'
     const date = new Date(seconds * 1000)
     return date.toISOString().substr(14, 5)
@@ -26,7 +26,7 @@ export function formatTimeISO(seconds: number): string {
  * @param timestamp The timestamp to compare
  * @returns Human-readable time difference
  */
-export function getTimeAgo(timestamp: number | Date): string {
+export function get_time_ago(timestamp) {
     const date = timestamp instanceof Date ? timestamp : new Date(timestamp)
     const now = new Date()
 
@@ -41,7 +41,7 @@ export function getTimeAgo(timestamp: number | Date): string {
         minute: 60,
     }
 
-    const timeUnits = {
+    const time_units = {
         year: ['سنة', 'سنتين', 'سنوات'],
         month: ['شهر', 'شهرين', 'شهور'],
         week: ['أسبوع', 'أسبوعين', 'أسابيع'],
@@ -51,24 +51,24 @@ export function getTimeAgo(timestamp: number | Date): string {
         second: ['ثانية', 'ثانيتين', 'ثواني'],
     }
 
-    for (const [unit, secondsInUnit] of Object.entries(intervals)) {
-        const interval = Math.floor(seconds / secondsInUnit)
+    for (const [unit, seconds_in_unit] of Object.entries(intervals)) {
+        const interval = Math.floor(seconds / seconds_in_unit)
 
         if (interval >= 1) {
-            const unitKey = unit as keyof typeof timeUnits
-            let unitWord
+            const unit_key = unit
+            let unit_word
 
             if (interval === 1) {
-                unitWord = timeUnits[unitKey][0]
+                unit_word = time_units[unit_key][0]
             } else if (interval === 2) {
-                unitWord = timeUnits[unitKey][1]
+                unit_word = time_units[unit_key][1]
             } else if (interval <= 10) {
-                unitWord = timeUnits[unitKey][2]
+                unit_word = time_units[unit_key][2]
             } else {
-                unitWord = timeUnits[unitKey][2]
+                unit_word = time_units[unit_key][2]
             }
 
-            return `منذ ${interval} ${unitWord}`
+            return `منذ ${interval} ${unit_word}`
         }
     }
 

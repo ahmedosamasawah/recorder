@@ -1,9 +1,7 @@
 import process from 'node:process'
-
 import {svelte} from '@sveltejs/vite-plugin-svelte'
 import {execFileSync as exec} from 'child_process'
 import path from 'path'
-import AutoImport from 'unplugin-auto-import/vite'
 
 import pkg from './package.json'
 
@@ -58,10 +56,6 @@ export default {
                 ]
                 if (!IGNORED_WARNINGS.includes(warning.code)) handler(warning)
             },
-        }),
-        AutoImport({
-            imports: ['svelte', 'svelte/store', 'svelte/transition', 'svelte/animate'],
-            dts: './src/auto-imports.d.ts',
         }),
     ],
 }

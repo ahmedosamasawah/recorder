@@ -2,13 +2,14 @@ import {fontFamily} from 'tailwindcss/defaultTheme'
 import tailwindcssAnimate from 'tailwindcss-animate'
 
 /** @type {import('tailwindcss').Config} */
-const config = {
-    darkMode: ['class'],
+export default {
     content: [
         './index.html',
         './node_modules/components/src/*.svelte',
         './src/**/*.{html,js,svelte,ts}',
     ],
+    darkMode: ['class'],
+
     safelist: ['dark'],
     theme: {
         container: {
@@ -19,7 +20,15 @@ const config = {
             },
         },
         extend: {
+            fontFamily: {
+                kitab: ['Kitab', 'sans-serif'],
+            },
             colors: {
+                'recorder-blue': '#4a86e8',
+                'recorder-red': '#ef4444',
+                'recorder-dark': '#1f2937',
+                'recorder-light': '#f9fafb',
+                'recorder-gray': '#6b7280',
                 border: 'hsl(var(--border) / <alpha-value>)',
                 input: 'hsl(var(--input) / <alpha-value>)',
                 ring: 'hsl(var(--ring) / <alpha-value>)',
@@ -96,5 +105,3 @@ const config = {
     },
     plugins: [tailwindcssAnimate],
 }
-
-export default config

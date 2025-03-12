@@ -1,175 +1,181 @@
-<div class="audio-player {!recording ? 'disabled' : ''} {isRecording ? 'hidden' : ''}">
-    {#if recording && !isRecording}
-        <div class="player-header">
-            <Button
-                type="icon"
-                size="small"
-                styles={'p-0'}
-                icon={DownloadIcon}
+<div
+    class="mb-6 rounded-lg bg-white p-4 shadow-sm"
+    class:opacity-50={!recording}
+    class:hidden={is_recording}
+>
+    {#if recording && !is_recording}
+        <div class="mb-3 flex items-center justify-between">
+            <button
+                class="p-2 text-gray-600 hover:text-gray-800"
                 title="تنزيل التسجيل"
-                on:click={() => downloadRecording(recording)}
-            />
-            <div class="recording-name">{recording.name}</div>
-            <div class="spacer"></div>
+                onclick={() => download_recording(recording)}
+            >
+                <div class="h-5 w-5">{@html DownloadIcon}</div>
+            </button>
+            <div class="line-clamp-1 font-medium">{recording.name}</div>
+            <button
+                aria-pressed={repeat}
+                onclick={toggle_repeat}
+                aria-label="Toggle repeat"
+                class:text-blue-600={repeat}
+                class="h-8 w-8 hover:text-gray-800"
+            >
+                <div class="h-5 w-5">{@html RepeatIcon}</div>
+            </button>
         </div>
 
-        <div class="progress-container" dir="ltr">
+        <div class="mb-3" dir="ltr">
             <ProgressBar
                 height="8px"
                 rounded={true}
                 max={duration}
                 interactive={true}
-                value={currentTime}
-                onSeek={handleSeek}
+                value={current_time}
+                on_seek={handle_seek}
             />
         </div>
 
-        <div class="time-container">
-            <TimeDisplay {currentTime} {duration} showRemaining={false} />
-            <div class="main-controls">
-                <button
-                    class="repeat-button"
-                    class:active={repeat}
-                    aria-pressed={repeat}
-                    on:click={toggleRepeat}
-                    aria-label="Toggle repeat"
-                >
-                    <Icon icon={RepeatIcon} size="1.5em" />
-                </button>
+        <div class="mb-4 flex items-center justify-between">
+            <TimeDisplay {current_time} {duration} show_remaining={false} />
 
+            <div class="flex gap-3">
                 <button
-                    class="play-button"
-                    on:click={togglePlay}
-                    aria-label={isPlaying ? 'Pause' : 'Play'}
+                    class="flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white hover:bg-blue-700"
+                    onclick={toggle_play}
+                    aria-label={is_playing ? 'Pause' : 'Play'}
                 >
-                    <Icon icon={isPlaying ? PauseIcon : PlayIcon} size="1.5em" />
+                    <div class="h-6 w-6">{@html is_playing ? PauseIcon : PlayIcon}</div>
                 </button>
             </div>
 
-            <div class="remaining-time">
+            <div class="text-sm text-gray-600">
                 <TimeDisplay
                     duration={0}
-                    showRemaining={true}
-                    currentTime={duration - currentTime < 1 ? 0 : duration - currentTime}
+                    show_remaining={true}
+                    current_time={duration - current_time < 1 ? 0 : duration - current_time}
                 />
             </div>
         </div>
 
-        <div class="additional-controls">
-            <div class="playback-rate-controls">
+        <div class="flex items-center justify-between gap-2 max-[400px]:flex-col-reverse">
+            <div class="flex items-center gap-2">
                 <button
-                    class="speed-button"
+                    class="flex h-8 w-8 items-center justify-center rounded-md bg-gray-100 hover:bg-gray-200"
                     aria-label="Increase playback speed"
-                    on:click={() => changePlaybackRate(0.1)}
+                    onclick={() => change_playback_rate(0.1)}
                 >
-                    <Icon icon={ChevronRightIcon} size="1em" />
+                    <div class="h-4 w-4">{@html ChevronRightIcon}</div>
                 </button>
 
-                <div class="playback-rate-display">
-                    {playbackRate.toFixed(1)}x
+                <div class="min-w-12 rounded bg-gray-100 px-2 py-1 text-center text-sm">
+                    {playback_rate.toFixed(1)}x
                 </div>
 
                 <button
-                    class="speed-button"
+                    class="flex h-8 w-8 items-center justify-center rounded-md bg-gray-100 hover:bg-gray-200"
                     aria-label="Decrease playback speed"
-                    on:click={() => changePlaybackRate(-0.1)}
+                    onclick={() => change_playback_rate(-0.1)}
                 >
-                    <Icon icon={ChevronLeftIcon} size="1em" />
+                    <div class="h-4 w-4">{@html ChevronLeftIcon}</div>
                 </button>
             </div>
 
-            <div class="skip-controls">
+            <div class="flex gap-2">
                 <button
-                    class="skip-button"
-                    on:click={() => skip(5)}
+                    class="flex items-center gap-1 rounded-md bg-gray-100 px-3 py-2 hover:bg-gray-200"
+                    onclick={() => skip(5)}
                     aria-label="Skip forward 5 seconds"
                 >
-                    <Icon icon={SkipForwardIcon} size="1em" />
-                    <span>5</span>
+                    <div class="h-4 w-4">{@html SkipForwardIcon}</div>
+                    <span class="text-sm">5</span>
                 </button>
-
                 <button
-                    class="skip-button"
-                    on:click={() => skip(-5)}
+                    class="flex items-center gap-1 rounded-md bg-gray-100 px-3 py-2 hover:bg-gray-200"
+                    onclick={() => skip(-5)}
                     aria-label="Skip backward 5 seconds"
                 >
-                    <span>5</span>
-                    <Icon icon={SkipBackwardIcon} size="1em" />
+                    <span class="text-sm">5</span>
+                    <div class="h-4 w-4">{@html SkipBackwardIcon}</div>
                 </button>
             </div>
         </div>
     {:else}
-        <div class="no-recording">
+        <div class="flex h-40 items-center justify-center text-gray-500">
             <p>لا يوجد تسجيل مختار</p>
         </div>
     {/if}
 </div>
 
-<script lang="ts">
+<script>
 import {onDestroy, onMount} from 'svelte'
 
-import {playbackState} from '../lib/stores/audioStore.ts'
-import {downloadRecording} from '../lib/stores/recordingStore.ts'
-import type {Recording} from '../lib/types'
 import {
-    ChevronLeftIcon,
-    ChevronRightIcon,
-    DownloadIcon,
-    PauseIcon,
     PlayIcon,
+    PauseIcon,
     RepeatIcon,
-    SkipBackwardIcon,
+    DownloadIcon,
+    ChevronLeftIcon,
     SkipForwardIcon,
-} from '../lib/utils/icons.ts'
-import Button from './ui/Button.svelte'
-import Icon from './ui/Icon.svelte'
+    SkipBackwardIcon,
+    ChevronRightIcon,
+} from '../lib/utils/icons.js'
 import ProgressBar from './ui/ProgressBar.svelte'
 import TimeDisplay from './ui/TimeDisplay.svelte'
+import {playback_state} from '../lib/stores/audioStore.js'
+import {download_recording} from '../lib/stores/recordingStore.js'
 
-export let isRecording: boolean
-export let recording: Recording | null = null
+let audio
+let duration = $state(0)
+let repeat = $state(false)
+let current_time = $state(0)
+let is_playing = $state(false)
+let playback_rate = $state(1.0)
+let load_promise = $state(null)
+let {is_recording, recording} = $props()
 
-let duration = 0
-let repeat = false
-let currentTime = 0
-let isPlaying = false
-let playbackRate = 1.0
-let audio: HTMLAudioElement
-let loadPromise: Promise<void> | null = null
+$effect(() => {
+    if (recording) load_audio(recording)
+})
 
-$: if (recording) loadAudio(recording)
-
-$: if (isRecording && isPlaying)
-    if (audio) {
+$effect(() => {
+    if (is_recording && is_playing && audio) {
         audio.pause()
-        isPlaying = false
+        is_playing = false
     }
+})
 
-async function loadAudio(rec: Recording) {
+async function load_audio(rec) {
     if (!audio) return
 
     // Reset state
     audio.pause()
-    isPlaying = false
-    currentTime = 0
+    is_playing = false
+    current_time = 0
+
+    console.log('Loading audio with duration:', rec.duration)
+    // Set duration from recording
+    duration = rec.duration || 0
 
     // Create a load promise
-    loadPromise = new Promise(resolve => {
+    load_promise = new Promise(resolve => {
         // Setup listener for loaded metadata
-        const handleLoaded = () => {
-            if (audio.duration && audio.duration !== Infinity) duration = audio.duration
-            else duration = rec.duration
+        const handle_loaded = () => {
+            if (audio.duration && audio.duration !== Infinity) {
+                duration = audio.duration
+                console.log('Audio metadata loaded. Duration:', duration)
+            }
 
-            audio.removeEventListener('loadedmetadata', handleLoaded)
+            audio.removeEventListener('loadedmetadata', handle_loaded)
             resolve()
         }
 
-        audio.addEventListener('loadedmetadata', handleLoaded)
+        audio.addEventListener('loadedmetadata', handle_loaded)
 
         // Set fallback timeout if metadata loading fails
         setTimeout(() => {
-            if (loadPromise) {
-                duration = rec.duration
+            if (load_promise) {
+                console.log('Metadata loading timed out. Using recording duration:', rec.duration)
+                duration = rec.duration || 0
                 resolve()
             }
         }, 2000)
@@ -177,16 +183,16 @@ async function loadAudio(rec: Recording) {
 
     // Load new audio
     audio.src = rec.url
-    audio.playbackRate = playbackRate
+    audio.playbackRate = playback_rate
     audio.load()
 }
 
-async function togglePlay() {
-    if (!recording || !audio || isRecording) return
+async function toggle_play() {
+    if (!recording || !audio || is_recording) return
 
-    if (audio.paused && loadPromise) {
+    if (audio.paused && load_promise) {
         try {
-            await loadPromise
+            await load_promise
         } catch (error) {
             console.error('Error loading audio:', error)
         }
@@ -196,299 +202,136 @@ async function togglePlay() {
         try {
             await audio.play()
         } catch (error) {
-            console.error('Error playing audio:', error) // TODO: Delete later
+            console.error('Error playing audio:', error)
 
             if (recording) {
                 audio = new Audio(recording.url)
-                setupAudioListeners()
+                setup_audio_listeners()
                 await audio.play()
-                isPlaying = true
+                is_playing = true
             }
         }
-    } else {
-        audio.pause()
-    }
+    } else audio.pause()
 }
 
-function toggleRepeat() {
+function toggle_repeat() {
     repeat = !repeat
     if (audio) audio.loop = repeat
 }
 
-function skip(seconds: number) {
-    if (!recording || !audio || isRecording) return
-    audio.currentTime = Math.max(0, Math.min(audio.currentTime + seconds, duration))
+// In AudioPlayer.svelte
+function skip(seconds) {
+    if (!recording || !audio || is_recording) return
+
+    // Make sure all values are valid numbers
+    const current = audio.currentTime || 0
+    const max_duration = isFinite(duration) ? duration : 0
+
+    // Calculate new time with safety bounds
+    const new_time = Math.max(0, Math.min(current + seconds, max_duration))
+
+    // Only set if it's a valid number
+    if (isFinite(new_time)) audio.currentTime = new_time
 }
 
-function handleSeek(percentage: number) {
-    if (!recording || !audio || isRecording) return
-    audio.currentTime = percentage * duration
+function handle_seek(percentage) {
+    if (!recording || !audio || is_recording) return
+
+    const max_duration = isFinite(duration) ? duration : 0
+    const new_time = percentage * max_duration
+
+    if (isFinite(new_time)) audio.currentTime = new_time
 }
 
-function changePlaybackRate(change: number) {
-    playbackRate = Math.max(0.5, Math.min(2, playbackRate + change))
-    if (audio) audio.playbackRate = playbackRate
+function change_playback_rate(change) {
+    playback_rate = Math.max(0.5, Math.min(2, playback_rate + change))
+    if (audio) audio.playbackRate = playback_rate
 }
 
-function handlePlay() {
-    isPlaying = true
+function handle_play() {
+    is_playing = true
 }
 
-function handlePause() {
-    isPlaying = false
+function handle_pause() {
+    is_playing = false
 }
 
-function handleTimeUpdate() {
-    currentTime = audio.currentTime
+function handle_time_update() {
+    current_time = audio.currentTime
 
-    playbackState.update(state => ({
+    playback_state.update(state => ({
         ...state,
-        currentTime,
+        current_time,
         duration,
     }))
 }
 
-function handleLoadedMetadata() {
+function handle_loaded_metadata() {
     if (audio.duration && audio.duration !== Infinity) {
         duration = audio.duration
 
-        playbackState.update(state => ({
+        playback_state.update(state => ({
             ...state,
             duration,
         }))
     }
 }
 
-function handleEnded() {
+function handle_ended() {
     if (repeat) {
         audio.currentTime = 0
         audio.play()
-    } else isPlaying = false
+    } else is_playing = false
 }
 
-function setupAudioListeners() {
+function setup_audio_listeners() {
     if (!audio) return
 
-    audio.addEventListener('play', handlePlay)
-    audio.addEventListener('pause', handlePause)
-    audio.addEventListener('timeupdate', handleTimeUpdate)
-    audio.addEventListener('loadedmetadata', handleLoadedMetadata)
-    audio.addEventListener('ended', handleEnded)
+    audio.addEventListener('play', handle_play)
+    audio.addEventListener('pause', handle_pause)
+    audio.addEventListener('timeupdate', handle_time_update)
+    audio.addEventListener('loadedmetadata', handle_loaded_metadata)
+    audio.addEventListener('ended', handle_ended)
 }
 
-function cleanupAudioListeners() {
+function cleanup_audio_listeners() {
     if (!audio) return
 
     audio.pause()
-    audio.removeEventListener('play', handlePlay)
-    audio.removeEventListener('pause', handlePause)
-    audio.removeEventListener('timeupdate', handleTimeUpdate)
-    audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
-    audio.removeEventListener('ended', handleEnded)
+    audio.removeEventListener('play', handle_play)
+    audio.removeEventListener('pause', handle_pause)
+    audio.removeEventListener('timeupdate', handle_time_update)
+    audio.removeEventListener('loadedmetadata', handle_loaded_metadata)
+    audio.removeEventListener('ended', handle_ended)
 }
 
 onMount(() => {
     audio = new Audio()
-    setupAudioListeners()
+    setup_audio_listeners()
 
-    if (recording && !isRecording) loadAudio(recording)
+    if (recording && !is_recording) load_audio(recording)
 
-    playbackState.set({
-        isPlaying: false,
-        currentTime: 0,
+    playback_state.set({
+        is_playing: false,
+        current_time: 0,
         duration: recording?.duration || 0,
-        playbackRate,
+        playback_rate,
         repeat,
     })
 })
 
 onDestroy(() => {
-    if (audio) cleanupAudioListeners()
+    if (audio) cleanup_audio_listeners()
 })
 
-$: playbackState.update(state => ({
-    ...state,
-    isPlaying,
-    currentTime,
-    duration,
-    playbackRate,
-    repeat,
-}))
+$effect(() => {
+    playback_state.update(state => ({
+        ...state,
+        is_playing,
+        current_time,
+        duration,
+        playback_rate,
+        repeat,
+    }))
+})
 </script>
-
-<style>
-.audio-player {
-    background-color: white;
-    border-radius: 0.5rem;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.disabled {
-    opacity: 0.5;
-    pointer-events: none;
-}
-
-.player-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.75rem;
-}
-
-.recording-name {
-    font-size: 1.125rem;
-    font-weight: 500;
-    text-align: center;
-}
-
-.spacer {
-    width: 1.5rem;
-}
-
-.progress-container {
-    margin-bottom: 0.75rem;
-}
-
-.time-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-@media (max-width: 400px) {
-    .time-container {
-        flex-direction: columns;
-    }
-}
-
-.main-controls {
-    display: flex;
-    gap: 0.75rem;
-}
-
-.play-button {
-    width: 3.5rem;
-    height: 3.5rem;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    background-color: #4a86e8;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.play-button:hover {
-    background-color: #3a76d8;
-}
-
-.repeat-button {
-    border: none;
-    color: #000;
-    width: 3.5rem;
-    display: flex;
-    height: 3.5rem;
-    cursor: pointer;
-    border-radius: 50%;
-    transition: all 0.2s;
-    align-items: center;
-    justify-content: center;
-    background-color: #f5f5f5;
-}
-
-.repeat-button:hover {
-    background-color: #e0e0e0;
-}
-
-.repeat-button.active {
-    color: #4a86e8;
-    background-color: #e6f0ff;
-}
-
-.additional-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-}
-
-@media (max-width: 400px) {
-    .additional-controls {
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .playback-rate-controls,
-    .skip-controls {
-        width: 100%;
-        justify-content: center;
-    }
-}
-.playback-rate-controls {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.speed-button {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    background-color: #f5f5f5;
-    color: #333;
-    cursor: pointer;
-}
-
-.speed-button:hover {
-    background-color: #e0e0e0;
-}
-
-.playback-rate-display {
-    font-size: 0.875rem;
-    color: #333;
-    background-color: #f5f5f5;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    min-width: 3rem;
-    text-align: center;
-}
-
-.skip-controls {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.skip-button {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.25rem;
-    border: none;
-    background-color: #f5f5f5;
-    color: #333;
-    cursor: pointer;
-}
-
-.skip-button:hover {
-    background-color: #e0e0e0;
-}
-
-.no-recording {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 10rem;
-    color: #666;
-}
-</style>

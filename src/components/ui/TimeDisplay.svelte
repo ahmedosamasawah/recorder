@@ -1,35 +1,15 @@
-<div class="time-display">
-    <span class="current">{formattedCurrent}</span>
+<div class="select-none text-sm text-gray-600">
+    <span>{formatted_current}</span>
 </div>
 
-<script lang="ts">
-export const duration: number = 0
-export let currentTime: number = 0
-export const showRemaining: boolean = false
+<script>
+let formatted_current = $derived(format_time(current_time))
+let {duration, current_time, show_remaining} = $props()
 
-function formatTime(seconds: number): string {
+function format_time(seconds) {
     if (isNaN(seconds) || !isFinite(seconds)) return '00:00'
     const minutes = Math.floor(seconds / 60)
-    const remainingSeconds = Math.floor(seconds % 60)
-    const formattedTime = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`
-
-    return formattedTime
+    const remaining_seconds = Math.floor(seconds % 60)
+    return `${minutes.toString().padStart(2, '0')}:${remaining_seconds.toString().padStart(2, '0')}`
 }
-
-$: formattedCurrent = formatTime(currentTime)
-// $: formattedDuration = formatTime(duration)
-// $: formattedRemaining = formatTime(Math.max(0, duration - currentTime))
 </script>
-
-<style>
-.time-display {
-    font-family: inherit;
-    font-size: 0.875rem;
-    color: #666;
-    user-select: none;
-}
-
-/* .separator {
-    opacity: 0.6;
-} */
-</style>

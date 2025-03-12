@@ -1,61 +1,69 @@
-<div class="recordings-list">
-    <h2 class="list-title">التسجيلات السابقة</h2>
+<div class="mb-6 rounded-lg bg-white p-4 shadow-sm">
+    <h2 class="mb-4 text-xl font-semibold text-gray-800">التسجيلات السابقة</h2>
 
-    {#if isLoading}
-        <div class="loading-indicator">
-            <span class="loader"></span>
+    {#if is_loading}
+        <div class="flex h-32 flex-col items-center justify-center gap-4 text-gray-500">
+            <div
+                class="border-3 h-6 w-6 animate-spin rounded-full border-gray-200 border-t-blue-500"
+            ></div>
             <span>جاري التحميل...</span>
         </div>
-    {:else if recordingsList.length === 0}
-        <div class="empty-state">
+    {:else if recordings_list.length === 0}
+        <div class="flex h-32 flex-col items-center justify-center text-center text-gray-500">
             <p>لا توجد تسجيلات سابقة</p>
-            <p class="empty-hint">اضغط على زر التسجيل لبدء تسجيل جديد</p>
+            <p class="mt-2 text-sm opacity-70">اضغط على زر التسجيل لبدء تسجيل جديد</p>
         </div>
     {:else}
-        <ul class="recordings-items" role="listbox" aria-label="قائمة التسجيلات">
-            {#each recordingsList as recording (recording.id)}
+        <ul class="divide-y divide-gray-200" role="listbox" aria-label="قائمة التسجيلات">
+            {#each recordings_list as recording (recording.id)}
                 <li
                     role="option"
-                    aria-selected={currentRec?.id === recording.id}
+                    aria-selected={current_rec?.id === recording.id}
                     tabindex="0"
-                    class="recording-item {currentRec?.id === recording.id ? 'selected' : ''}"
-                    on:click={() => handleSelectRecording(recording)}
-                    on:keydown={e => handleKeyDown(e, recording)}
+                    class="cursor-pointer px-2 py-3 transition-colors hover:bg-gray-50"
+                    class:bg-blue-50={current_rec?.id === recording.id}
+                    onclick={() => handle_select_recording(recording)}
+                    onkeydown={e => handle_key_down(e, recording)}
                 >
-                    <div class="recording-info">
+                    <div class="w-full">
                         <div class="flex items-center justify-between">
-                            <div class="recording-name">{recording.name}</div>
-                            <div class="recording-actions">
+                            <div
+                                class="line-clamp-1 font-medium"
+                                class:text-blue-600={current_rec?.id === recording.id}
+                            >
+                                {recording.name}
+                            </div>
+
+                            <div class="flex">
                                 <button
-                                    class="action-button edit-button"
-                                    on:click|stopPropagation={() =>
-                                        handleRenameRecording(recording)}
+                                    class="flex h-8 w-8 items-center justify-center rounded-full text-gray-600 hover:bg-gray-200"
+                                    onclick={e => {
+                                        e.stopPropagation()
+                                        handle_rename_recording(recording)
+                                    }}
                                     title="تغيير الاسم"
                                     aria-label="تغيير الاسم"
                                 >
-                                    <span class="icon-wrapper">
-                                        {@html EditIcon}
-                                    </span>
+                                    <div class="h-5 w-5">{@html EditIcon}</div>
                                 </button>
 
                                 <button
-                                    class="action-button delete-button"
-                                    on:click|stopPropagation={() =>
-                                        handleDeleteRecording(recording)}
+                                    class="flex h-8 w-8 items-center justify-center rounded-full text-gray-600 hover:bg-gray-200 hover:text-red-500"
+                                    onclick={e => {
+                                        e.stopPropagation()
+                                        handle_delete_recording(recording)
+                                    }}
                                     title="حذف"
                                     aria-label="حذف"
                                 >
-                                    <span class="icon-wrapper">
-                                        {@html DeleteIcon}
-                                    </span>
+                                    <div class="h-5 w-5">{@html DeleteIcon}</div>
                                 </button>
                             </div>
                         </div>
-                        <div class="recording-meta">
-                            <span class="recording-date">{getTimeAgo(recording.date)}</span>
-                            <span class="recording-duration pl-4"
-                                >{formatTime(recording.duration)}</span
-                            >
+
+                        <div class="flex justify-between text-sm text-gray-500">
+                            <span>{get_time_ago(recording.date)}</span>
+                            <span class="pl-4">{format_time(recording.duration)}</span>
                         </div>
                     </div>
                 </li>
@@ -64,206 +72,58 @@
     {/if}
 </div>
 
-<script lang="ts">
+<script>
 import {onDestroy, onMount} from 'svelte'
 
 import {
-    currentRecording,
-    deleteRecording,
     loading,
-    loadRecordings,
     recordings,
-    renameRecording,
-    setCurrentRecording,
-} from '../lib/stores/recordingStore.ts'
-import type {Recording} from '../lib/types'
-import {DeleteIcon, EditIcon} from '../lib/utils/icons.ts'
-import {formatTime, getTimeAgo} from '../lib/utils/timeUtils.ts'
+    load_recordings,
+    delete_recording,
+    rename_recording,
+    current_recording,
+    set_current_recording,
+} from '../lib/stores/recordingStore.js'
+import {DeleteIcon, EditIcon} from '../lib/utils/icons.js'
+import {format_time, get_time_ago} from '../lib/utils/timeUtils.js'
 
-let isLoading = true
-let recordingsList: Recording[] = []
-let currentRec: Recording | null = null
+let is_loading = $state(true)
+let current_rec = $state(null)
+let recordings_list = $state([])
 
 // Subscribe to stores
-const unsubRecordings = recordings.subscribe(value => (recordingsList = value))
+const unsub_recordings = recordings.subscribe(value => (recordings_list = value))
 
-const unsubCurrent = currentRecording.subscribe(value => (currentRec = value))
+const unsub_current = current_recording.subscribe(value => (current_rec = value))
 
-const unsubLoading = loading.subscribe(value => (isLoading = value))
+const unsub_loading = loading.subscribe(value => (is_loading = value))
 
-function handleSelectRecording(recording: Recording) {
-    setCurrentRecording(recording)
+function handle_select_recording(recording) {
+    set_current_recording(recording)
 }
 
-function handleRenameRecording(recording: Recording) {
-    const newName = prompt('أدخل اسمًا جديدًا للتسجيل:', recording.name)
-    if (newName && newName.trim()) renameRecording(recording.id, newName.trim())
+function handle_rename_recording(recording) {
+    const new_name = prompt('أدخل اسمًا جديدًا للتسجيل:', recording.name)
+    if (new_name && new_name.trim()) rename_recording(recording.id, new_name.trim())
 }
 
-function handleDeleteRecording(recording: Recording) {
-    if (confirm('هل أنت متأكد من حذف هذا التسجيل؟')) deleteRecording(recording.id)
+function handle_delete_recording(recording) {
+    if (confirm('هل أنت متأكد من حذف هذا التسجيل؟')) delete_recording(recording.id)
 }
 
 // Handle keyboard navigation
-function handleKeyDown(event: KeyboardEvent, recording: Recording) {
+function handle_key_down(event, recording) {
     if (event.key === 'Enter' || event.key === ' ') {
-        handleSelectRecording(recording)
+        handle_select_recording(recording)
         event.preventDefault()
     }
 }
 
-onMount(async () => await loadRecordings())
+onMount(async () => await load_recordings())
 
 onDestroy(() => {
-    unsubRecordings()
-    unsubCurrent()
-    unsubLoading()
+    unsub_recordings()
+    unsub_current()
+    unsub_loading()
 })
 </script>
-
-<style>
-.recordings-list {
-    background-color: white;
-    border-radius: 0.5rem;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.list-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: #1f2937;
-}
-
-.loading-indicator {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 8rem;
-    color: #6b7280;
-    gap: 1rem;
-}
-
-.loader {
-    width: 1.5rem;
-    height: 1.5rem;
-    border: 3px solid #e5e7eb;
-    border-top-color: #4a86e8;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-.empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 8rem;
-    color: #6b7280;
-    text-align: center;
-}
-
-.empty-hint {
-    font-size: 0.875rem;
-    opacity: 0.7;
-    margin-top: 0.5rem;
-}
-
-.recordings-items {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    border-top: 1px solid #e5e7eb;
-}
-
-.recording-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 0.5rem;
-    border-bottom: 1px solid #e5e7eb;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.recording-item:hover {
-    background-color: #f9fafb;
-}
-
-.recording-item:focus {
-    outline: 2px solid #4a86e8;
-    outline-offset: -2px;
-}
-
-.recording-item.selected {
-    background-color: #f0f7ff;
-}
-
-.recording-info {
-    flex: 1;
-    min-width: 0;
-    padding-right: 0.5rem;
-}
-
-.recording-name {
-    font-weight: 500;
-    margin-bottom: 0.25rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.selected .recording-name {
-    color: #4a86e8;
-}
-
-.recording-meta {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.875rem;
-    color: #6b7280;
-}
-
-.recording-actions {
-    display: flex;
-
-    gap: 0.5rem;
-}
-
-.action-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #6b7280;
-    width: 2rem;
-    height: 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 9999px;
-    transition: all 0.2s;
-}
-
-.action-button:hover {
-    background-color: #f3f4f6;
-}
-
-.delete-button:hover {
-    color: #ef4444;
-}
-
-.icon-wrapper {
-    width: 1.25rem;
-    height: 1.25rem;
-    display: flex;
-}
-</style>
